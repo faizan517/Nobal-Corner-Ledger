@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import VendorManagement from "./pages/VendorManagement";
 import LedgerManagement from "./pages/LedgerManagement";
+import VendorDetail from "./pages/VendorDetail";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
           <Route path="/vendors" element={<Layout><VendorManagement /></Layout>} />
           <Route path="/ledger" element={<Layout><LedgerManagement /></Layout>} />
+          <Route path="/vendor-detail" element={<Layout><VendorDetail /></Layout>} />
           <Route path="/settings" element={<Layout><Settings /></Layout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
