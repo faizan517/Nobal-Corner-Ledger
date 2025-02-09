@@ -11,140 +11,175 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Plus, Trash } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ArrowLeft, Plus } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const VendorDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
   const vendorData = location.state?.vendor || {};
 
-  const [details, setDetails] = useState([]);
-  const [newDetail, setNewDetail] = useState({
+  const [entries, setEntries] = useState([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newEntry, setNewEntry] = useState({
+    date: new Date().toISOString().split('T')[0],
+    challanNo: "",
     description: "",
     quantity: "",
     priceMtr: "",
+    debit: "",
+    credit: "",
+    paymentMethod: "cash"
   });
 
-  const handleAddDetail = () => {
-    if (newDetail.description && newDetail.quantity && newDetail.priceMtr) {
-      setDetails([...details, { ...newDetail, id: details.length + 1 }]);
-      setNewDetail({ description: "", quantity: "", priceMtr: "" });
+  const handleAddEntry = () => {
+    if (!newEntry.challanNo || !newEntry.description) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
     }
-  };
 
-  const handleDeleteDetail = (id) => {
-    setDetails(details.filter((detail) => detail.id !== id));
-  };
-
-  const calculateTotal = () => {
-    return details.reduce((sum, detail) => {
-      return sum + detail.quantity * detail.priceMtr;
-    }, 0);
+    setEntries([...entries, { ...newEntry, id: entries.length + 1 }]);
+    setNewEntry({
+      date: new Date().toISOString().split('T')[0],
+      challanNo: "",
+      description: "",
+      quantity: "",
+      priceMtr: "",
+      debit: "",
+      credit: "",
+      paymentMethod: "cash"
+    });
+    setIsDialogOpen(false);
+    toast({
+      title: "Success",
+      description: "Entry added successfully"
+    });
   };
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => navigate(-1)}>
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
-        <h1 className="text-2xl font-bold">Vendor Details</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" onClick={() => navigate(-1)}>
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <h1 className="text-2xl font-bold">{vendorData.vendorId || "Vendor"} Details</h1>
+        </div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Entry
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Add New Entry</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  type="date"
+                  value={newEntry.date}
+                  onChange={(e) => setNewEntry({ ...newEntry, date: e.target.value })}
+                />
+                <Input
+                  placeholder="Challan No"
+                  value={newEntry.challanNo}
+                  onChange={(e) => setNewEntry({ ...newEntry, challanNo: e.target.value })}
+                />
+              </div>
+              <Input
+                placeholder="Description"
+                value={newEntry.description}
+                onChange={(e) => setNewEntry({ ...newEntry, description: e.target.value })}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  type="number"
+                  placeholder="Quantity"
+                  value={newEntry.quantity}
+                  onChange={(e) => setNewEntry({ ...newEntry, quantity: e.target.value })}
+                />
+                <Input
+                  type="number"
+                  placeholder="Price/Mtr"
+                  value={newEntry.priceMtr}
+                  onChange={(e) => setNewEntry({ ...newEntry, priceMtr: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  type="number"
+                  placeholder="Debit"
+                  value={newEntry.debit}
+                  onChange={(e) => setNewEntry({ ...newEntry, debit: e.target.value })}
+                />
+                <Input
+                  type="number"
+                  placeholder="Credit"
+                  value={newEntry.credit}
+                  onChange={(e) => setNewEntry({ ...newEntry, credit: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <select
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={newEntry.paymentMethod}
+                  onChange={(e) => setNewEntry({ ...newEntry, paymentMethod: e.target.value })}
+                >
+                  <option value="cash">Cash</option>
+                  <option value="cheque">Cheque</option>
+                </select>
+              </div>
+              <Button onClick={handleAddEntry}>Submit</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      <Card className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          <div>
-            <label className="text-sm font-medium">Vendor ID</label>
-            <div className="mt-1 text-lg">{vendorData.vendorId || "-"}</div>
-          </div>
-          <div>
-            <label className="text-sm font-medium">Challan No</label>
-            <div className="mt-1 text-lg">{vendorData.challanNo || "-"}</div>
-          </div>
-          <div>
-            <label className="text-sm font-medium">Date</label>
-            <div className="mt-1 text-lg">
-              {new Date().toLocaleDateString()}
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Input
-              placeholder="Description"
-              value={newDetail.description}
-              onChange={(e) =>
-                setNewDetail({ ...newDetail, description: e.target.value })
-              }
-            />
-            <Input
-              type="number"
-              placeholder="Quantity"
-              value={newDetail.quantity}
-              onChange={(e) =>
-                setNewDetail({ ...newDetail, quantity: e.target.value })
-              }
-            />
-            <Input
-              type="number"
-              placeholder="Price/Mtr"
-              value={newDetail.priceMtr}
-              onChange={(e) =>
-                setNewDetail({ ...newDetail, priceMtr: e.target.value })
-              }
-            />
-          </div>
-          <Button onClick={handleAddDetail}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Detail
-          </Button>
-        </div>
-
-        <div className="mt-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Description</TableHead>
-                <TableHead>Quantity</TableHead>
-                <TableHead>Price/Mtr</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Actions</TableHead>
+      <Card className="p-4">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Date</TableHead>
+              <TableHead>Challan No</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Quantity</TableHead>
+              <TableHead>Price/Mtr</TableHead>
+              <TableHead>Debit</TableHead>
+              <TableHead>Credit</TableHead>
+              <TableHead>Payment Method</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {entries.map((entry) => (
+              <TableRow key={entry.id}>
+                <TableCell>{entry.date}</TableCell>
+                <TableCell>{entry.challanNo}</TableCell>
+                <TableCell>{entry.description}</TableCell>
+                <TableCell>{entry.quantity}</TableCell>
+                <TableCell>${entry.priceMtr}</TableCell>
+                <TableCell>${entry.debit}</TableCell>
+                <TableCell>${entry.credit}</TableCell>
+                <TableCell className="capitalize">{entry.paymentMethod}</TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {details.map((detail) => (
-                <TableRow key={detail.id}>
-                  <TableCell>{detail.description}</TableCell>
-                  <TableCell>{detail.quantity}</TableCell>
-                  <TableCell>${detail.priceMtr}</TableCell>
-                  <TableCell>
-                    ${(detail.quantity * detail.priceMtr).toFixed(2)}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteDetail(detail.id)}
-                    >
-                      <Trash className="w-4 h-4 text-red-500" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-
-        <div className="mt-6 flex justify-end">
-          <div className="bg-gray-100 p-4 rounded-lg">
-            <span className="font-medium">Total Amount: </span>
-            <span className="text-lg font-bold">
-              ${calculateTotal().toFixed(2)}
-            </span>
-          </div>
-        </div>
+            ))}
+          </TableBody>
+        </Table>
       </Card>
     </div>
   );
