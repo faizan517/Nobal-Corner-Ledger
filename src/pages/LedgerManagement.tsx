@@ -15,6 +15,7 @@ const initialLedger: LedgerEntry[] = [
     debit: 1000,
     credit: 0,
     ledger: "Purchase",
+    details: [] // Added the required details array
   },
   {
     id: 2,
@@ -23,6 +24,7 @@ const initialLedger: LedgerEntry[] = [
     debit: 0,
     credit: 500,
     ledger: "Payment",
+    details: [] // Added the required details array
   },
 ];
 
