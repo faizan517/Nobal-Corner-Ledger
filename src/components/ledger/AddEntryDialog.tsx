@@ -15,7 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LedgerEntry } from "@/types/ledger";
+import { Plus, Trash2 } from "lucide-react";
+import { LedgerEntry, DetailEntry } from "@/types/ledger";
 
 interface AddEntryDialogProps {
   isOpen: boolean;
@@ -24,11 +25,39 @@ interface AddEntryDialogProps {
 }
 
 const AddEntryDialog = ({ isOpen, onOpenChange, onSave }: AddEntryDialogProps) => {
-  const [newEntry, setNewEntry] = useState<Partial<LedgerEntry>>({});
+  const [newEntry, setNewEntry] = useState<Partial<LedgerEntry>>({
+    details: []
+  });
+
+  const addDetailEntry = () => {
+    setNewEntry({
+      ...newEntry,
+      details: [
+        ...(newEntry.details || []),
+        { id: Date.now(), description: "", quantity: 0, priceMtr: 0 }
+      ]
+    });
+  };
+
+  const removeDetailEntry = (id: number) => {
+    setNewEntry({
+      ...newEntry,
+      details: (newEntry.details || []).filter(detail => detail.id !== id)
+    });
+  };
+
+  const updateDetailEntry = (id: number, field: keyof DetailEntry, value: string | number) => {
+    setNewEntry({
+      ...newEntry,
+      details: (newEntry.details || []).map(detail =>
+        detail.id === id ? { ...detail, [field]: value } : detail
+      )
+    });
+  };
 
   const handleSave = () => {
     onSave(newEntry);
-    setNewEntry({});
+    setNewEntry({ details: [] });
   };
 
   return (
@@ -84,6 +113,47 @@ const AddEntryDialog = ({ isOpen, onOpenChange, onSave }: AddEntryDialogProps) =
               </SelectContent>
             </Select>
           </div>
+
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Details</h3>
+              <Button type="button" onClick={addDetailEntry} variant="outline" size="sm">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Detail
+              </Button>
+            </div>
+
+            {(newEntry.details || []).map((detail) => (
+              <div key={detail.id} className="grid grid-cols-4 gap-2 items-center">
+                <Input
+                  placeholder="Description"
+                  value={detail.description}
+                  onChange={(e) => updateDetailEntry(detail.id, "description", e.target.value)}
+                />
+                <Input
+                  type="number"
+                  placeholder="Quantity"
+                  value={detail.quantity}
+                  onChange={(e) => updateDetailEntry(detail.id, "quantity", Number(e.target.value))}
+                />
+                <Input
+                  type="number"
+                  placeholder="Price/Mtr"
+                  value={detail.priceMtr}
+                  onChange={(e) => updateDetailEntry(detail.id, "priceMtr", Number(e.target.value))}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeDetailEntry(detail.id)}
+                >
+                  <Trash2 className="w-4 h-4 text-red-500" />
+                </Button>
+              </div>
+            ))}
+          </div>
+
           <Button onClick={handleSave} className="w-full">
             Save Entry
           </Button>

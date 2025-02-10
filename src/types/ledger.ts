@@ -6,6 +6,7 @@ export interface LedgerEntry {
   debit: number;
   credit: number;
   ledger: string;
+  details: DetailEntry[];
 }
 
 export interface DetailEntry {
