@@ -1,4 +1,3 @@
-
 // API base URL
 const BASE_URL = 'http://localhost:5000/api';
 
@@ -10,7 +9,11 @@ export const userApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData),
     });
-    if (!response.ok) throw new Error('Registration failed');
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Registration failed');
+    }
     return response.json();
   },
 
@@ -20,7 +23,14 @@ export const userApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials),
     });
-    if (!response.ok) throw new Error('Login failed');
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Invalid username or password');
+      }
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Login failed');
+    }
     return response.json();
   },
 

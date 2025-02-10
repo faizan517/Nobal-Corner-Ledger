@@ -19,7 +19,7 @@ const Login = () => {
       userApi.login(credentials),
     onSuccess: (data) => {
       localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("token", data.token); // Store the JWT token
+      localStorage.setItem("token", data.token);
       navigate("/dashboard");
       toast({
         title: "Welcome back!",
@@ -28,8 +28,8 @@ const Login = () => {
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Login Failed",
+        description: error.message || "Invalid username or password",
         variant: "destructive",
       });
     },
@@ -37,6 +37,14 @@ const Login = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!username || !password) {
+      toast({
+        title: "Error",
+        description: "Please enter both username and password",
+        variant: "destructive",
+      });
+      return;
+    }
     loginMutation.mutate({ username, password });
   };
 
@@ -60,6 +68,7 @@ const Login = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full"
+                required
               />
             </div>
             <div className="space-y-2">
@@ -69,10 +78,15 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full"
+                required
               />
             </div>
-            <Button type="submit" className="w-full">
-              Sign In
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={loginMutation.isPending}
+            >
+              {loginMutation.isPending ? "Signing in..." : "Sign In"}
             </Button>
           </form>
         </CardContent>
