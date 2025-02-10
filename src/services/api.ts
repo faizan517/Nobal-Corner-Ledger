@@ -11,27 +11,33 @@ export const userApi = {
     });
     
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+      const errorData = await response.json();
       throw new Error(errorData.message || 'Registration failed');
     }
     return response.json();
   },
 
   login: async (credentials: { username: string; password: string }) => {
-    const response = await fetch(`${BASE_URL}/users/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(credentials),
-    });
-    
-    if (!response.ok) {
-      if (response.status === 401) {
+    try {
+      const response = await fetch(`${BASE_URL}/users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Invalid username or password');
+      }
+      
+      return data;
+    } catch (error: any) {
+      if (error.message === 'Invalid credentials') {
         throw new Error('Invalid username or password');
       }
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Login failed');
+      throw new Error('Login failed. Please try again.');
     }
-    return response.json();
   },
 
   updateUser: async (id: string, userData: any) => {

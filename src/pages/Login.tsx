@@ -15,8 +15,13 @@ const Login = () => {
   const { toast } = useToast();
 
   const loginMutation = useMutation({
-    mutationFn: (credentials: { username: string; password: string }) =>
-      userApi.login(credentials),
+    mutationFn: async (credentials: { username: string; password: string }) => {
+      try {
+        return await userApi.login(credentials);
+      } catch (error: any) {
+        throw new Error(error.message || 'Login failed');
+      }
+    },
     onSuccess: (data) => {
       localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("token", data.token);
@@ -29,7 +34,7 @@ const Login = () => {
     onError: (error: Error) => {
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid username or password",
+        description: error.message,
         variant: "destructive",
       });
     },
