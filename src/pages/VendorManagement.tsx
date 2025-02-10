@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Table,
   TableBody,
@@ -19,6 +20,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Plus, Edit, Trash } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { vendorApi } from "@/services/api";
 
 interface Vendor {
   id: number;
@@ -28,36 +31,65 @@ interface Vendor {
   address: string;
 }
 
-const initialVendors: Vendor[] = [
-  {
-    id: 1,
-    name: "John Doe",
-    company: "Tech Corp",
-    contact: "+1 234 567 890",
-    address: "123 Main St, City",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    company: "Design Inc",
-    contact: "+1 234 567 891",
-    address: "456 Oak St, Town",
-  },
-];
-
 const VendorManagement = () => {
-  const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newVendor, setNewVendor] = useState<Partial<Vendor>>({});
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch all vendors
+  const { data: vendors = [], isLoading } = useQuery({
+    queryKey: ['vendors'],
+    queryFn: vendorApi.getAllVendors,
+  });
+
+  // Add/Update vendor mutation
+  const vendorMutation = useMutation({
+    mutationFn: (vendor: Partial<Vendor>) => {
+      if (vendor.id) {
+        return vendorApi.updateVendor(String(vendor.id), vendor);
+      }
+      return vendorApi.addVendor(vendor);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
+      toast({
+        title: "Success",
+        description: `Vendor ${newVendor.id ? 'updated' : 'added'} successfully`,
+      });
+      setIsDialogOpen(false);
+      setNewVendor({});
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete vendor mutation
+  const deleteVendorMutation = useMutation({
+    mutationFn: (id: number) => vendorApi.deleteVendor(String(id)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
+      toast({
+        title: "Success",
+        description: "Vendor deleted successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleSave = () => {
-    if (newVendor.id) {
-      setVendors(vendors.map((v) => (v.id === newVendor.id ? { ...newVendor as Vendor } : v)));
-    } else {
-      setVendors([...vendors, { ...newVendor as Vendor, id: vendors.length + 1 }]);
-    }
-    setIsDialogOpen(false);
-    setNewVendor({});
+    vendorMutation.mutate(newVendor);
   };
 
   const handleEdit = (vendor: Vendor) => {
@@ -66,8 +98,12 @@ const VendorManagement = () => {
   };
 
   const handleDelete = (id: number) => {
-    setVendors(vendors.filter((v) => v.id !== id));
+    deleteVendorMutation.mutate(id);
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-4">

@@ -1,10 +1,12 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { userApi } from "@/services/api";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -12,22 +14,30 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (username === "admin" && password === "admin") {
+  const loginMutation = useMutation({
+    mutationFn: (credentials: { username: string; password: string }) =>
+      userApi.login(credentials),
+    onSuccess: (data) => {
       localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("token", data.token); // Store the JWT token
       navigate("/dashboard");
       toast({
         title: "Welcome back!",
         description: "You've successfully logged in.",
       });
-    } else {
+    },
+    onError: (error: Error) => {
       toast({
         title: "Error",
-        description: "Invalid credentials. Please try again.",
+        description: error.message,
         variant: "destructive",
       });
-    }
+    },
+  });
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    loginMutation.mutate({ username, password });
   };
 
   return (

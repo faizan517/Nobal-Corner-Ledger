@@ -1,45 +1,53 @@
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import AddEntryDialog from "@/components/ledger/AddEntryDialog";
 import LedgerTable from "@/components/ledger/LedgerTable";
 import { LedgerEntry } from "@/types/ledger";
-
-const initialLedger: LedgerEntry[] = [
-  {
-    id: 1,
-    vendorId: "V001",
-    challanNo: "CH001",
-    debit: 1000,
-    credit: 0,
-    ledger: "Purchase",
-    details: [] // Added the required details array
-  },
-  {
-    id: 2,
-    vendorId: "V002",
-    challanNo: "CH002",
-    debit: 0,
-    credit: 500,
-    ledger: "Payment",
-    details: [] // Added the required details array
-  },
-];
+import { ledgerApi } from "@/services/api";
 
 const LedgerManagement = () => {
-  const [ledger, setLedger] = useState<LedgerEntry[]>(initialLedger);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch all ledgers
+  const { data: ledger = [], isLoading } = useQuery({
+    queryKey: ['ledgers'],
+    queryFn: ledgerApi.getAllLedgers,
+  });
+
+  // Add new ledger entry mutation
+  const addLedgerMutation = useMutation({
+    mutationFn: (newEntry: Partial<LedgerEntry>) => ledgerApi.addLedgerEntry(newEntry),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ledgers'] });
+      toast({
+        title: "Success",
+        description: "Ledger entry added successfully",
+      });
+      setIsDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleSave = (newEntry: Partial<LedgerEntry>) => {
-    if (newEntry.id) {
-      setLedger(ledger.map((l) => (l.id === newEntry.id ? { ...newEntry as LedgerEntry } : l)));
-    } else {
-      setLedger([...ledger, { ...newEntry as LedgerEntry, id: ledger.length + 1 }]);
-    }
-    setIsDialogOpen(false);
+    addLedgerMutation.mutate(newEntry);
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-4">
