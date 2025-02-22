@@ -137,4 +137,15 @@ export const ledgerApi = {
     if (!response.ok) throw new Error('Failed to fetch all ledgers');
     return response.json();
   },
+
+  getLedgerReport: async (companyName: string, startDate: string, endDate: string, format: 'pdf' | 'excel' = 'pdf') => {
+    const url = `${BASE_URL}/ledger-report/${encodeURIComponent(companyName)}?format=${format}&start_date=${startDate}&end_date=${endDate}`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch ledger report');
+    }
+    
+    return response.blob();
+  }
 };
