@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -93,10 +92,12 @@ const LedgerManagement = () => {
     payment_method: ''
   });
 
-  const { data: ledger = [], isLoading, isError } = useQuery({
+  const { data: ledgerData = [], isLoading, isError } = useQuery({
     queryKey: ['ledgers'],
     queryFn: ledgerApi.getAllLedgers
   });
+
+  const ledger: Vendor[] = Array.isArray(ledgerData) ? ledgerData : [];
 
   const addLedgerMutation = useMutation({
     mutationFn: (newEntry: LedgerEntry) => ledgerApi.addLedgerEntry(newEntry),
@@ -221,7 +222,6 @@ const LedgerManagement = () => {
     }
   };
 
-  // Pagination logic
   const indexOfLastVendor = currentPage * vendorsPerPage;
   const indexOfFirstVendor = indexOfLastVendor - vendorsPerPage;
   const currentVendors = ledger.slice(indexOfFirstVendor, indexOfLastVendor);
@@ -430,7 +430,6 @@ const LedgerManagement = () => {
         </Table>
       </Card>
 
-      {/* Pagination Controls */}
       <div className="flex justify-end mt-4 space-x-2">
         <Button
           variant="outline"
