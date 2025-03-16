@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -94,10 +95,21 @@ const LedgerManagement = () => {
 
   const { data: ledgerData = [], isLoading, isError } = useQuery({
     queryKey: ['ledgers'],
-    queryFn: ledgerApi.getAllLedgers
+    queryFn: async () => {
+      try {
+        const data = await ledgerApi.getAllLedgers();
+        console.log('Fetched ledger data:', data);
+        return data;
+      } catch (error) {
+        console.error('Error fetching ledgers:', error);
+        throw error;
+      }
+    }
   });
 
+  // Ensure ledger is always an array
   const ledger: Vendor[] = Array.isArray(ledgerData) ? ledgerData : [];
+  console.log('Processed ledger array:', ledger);
 
   const addLedgerMutation = useMutation({
     mutationFn: (newEntry: LedgerEntry) => ledgerApi.addLedgerEntry(newEntry),
@@ -222,9 +234,10 @@ const LedgerManagement = () => {
     }
   };
 
+  // Make sure we have valid data for pagination
   const indexOfLastVendor = currentPage * vendorsPerPage;
   const indexOfFirstVendor = indexOfLastVendor - vendorsPerPage;
-  const currentVendors = ledger.slice(indexOfFirstVendor, indexOfLastVendor);
+  const currentVendors = Array.isArray(ledger) ? ledger.slice(indexOfFirstVendor, indexOfLastVendor) : [];
 
   const totalPages = Math.ceil(ledger.length / vendorsPerPage);
 
