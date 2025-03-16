@@ -1,57 +1,52 @@
 
-import { useNavigate } from "react-router-dom";
+import { Vendor } from '@/types/ledgerTypes';
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
-import { LedgerEntry } from "@/types/ledger";
+  TableRow
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Fonts } from '@/utils/Font.jsx';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface LedgerTableProps {
-  entries: LedgerEntry[];
+  vendors: Vendor[];
+  onViewDetails: (vendor: Vendor) => void;
 }
 
-const LedgerTable = ({ entries }: LedgerTableProps) => {
-  const navigate = useNavigate();
-
-  const handleViewDetails = (entry: LedgerEntry) => {
-    navigate("/vendor-detail", { state: { vendor: entry } });
-  };
-
+const LedgerTable = ({ vendors, onViewDetails }: LedgerTableProps) => {
+  const isMobile = useIsMobile();
+  
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>#</TableHead>
-          <TableHead>Vendor ID</TableHead>
-          <TableHead>Challan No</TableHead>
-          <TableHead>Debit</TableHead>
-          <TableHead>Credit</TableHead>
-          <TableHead>Ledger</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHead style={{ ...Fonts.Poppins, fontSize: isMobile ? '12px' : '16px' }}>Company Name</TableHead>
+          <TableHead style={{ ...Fonts.Poppins, fontSize: isMobile ? '12px' : '16px' }}>Supplier Name</TableHead>
+          <TableHead style={{ ...Fonts.Poppins, fontSize: isMobile ? '12px' : '16px' }}>Phone Number</TableHead>
+          <TableHead style={{ ...Fonts.Poppins, fontSize: isMobile ? '12px' : '16px' }}>Balance</TableHead>
+          <TableHead style={{ ...Fonts.Poppins, fontSize: isMobile ? '12px' : '16px' }}>Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {entries.map((entry) => (
-          <TableRow key={entry.id}>
-            <TableCell>{entry.id}</TableCell>
-            <TableCell>{entry.vendorId}</TableCell>
-            <TableCell>{entry.challanNo}</TableCell>
-            <TableCell>${entry.debit}</TableCell>
-            <TableCell>${entry.credit}</TableCell>
-            <TableCell>{entry.ledger}</TableCell>
+        {vendors.map((vendor: Vendor, index: number) => (
+          <TableRow key={index}>
+            <TableCell style={{ ...Fonts.Roboto, fontSize: isMobile ? '12px' : '14px' }}>{vendor.company_name}</TableCell>
+            <TableCell style={{ ...Fonts.Roboto, fontSize: isMobile ? '12px' : '14px' }}>{vendor.supplier_name}</TableCell>
+            <TableCell style={{ ...Fonts.Roboto, fontSize: isMobile ? '12px' : '14px' }}>{vendor.phone_no}</TableCell>
+            <TableCell style={{ ...Fonts.Roboto, fontSize: isMobile ? '12px' : '14px' }}>
+              {Number(vendor.balance).toLocaleString('ur-PK')}
+            </TableCell>
             <TableCell>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleViewDetails(entry)}
+              <Button 
+                onClick={() => onViewDetails(vendor)} 
+                className="bg-black text-white hover:bg-gray-200" 
+                style={{ ...Fonts.Roboto }}
               >
-                <Eye className="w-4 h-4" />
+                Ledger
               </Button>
             </TableCell>
           </TableRow>
