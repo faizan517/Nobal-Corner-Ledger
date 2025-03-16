@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import * as XLSX from 'xlsx';
@@ -45,20 +44,16 @@ const VendorDetail: React.FC = () => {
   const { toast } = useToast()
   const isMobile = useIsMobile()
   
-  // Ledger entries in local state
   const [entries, setEntries] = useState<VendorLedgerEntry[]>([])
   const [vendorTitle, setVendorTitle] = useState('')
 
-  // Dialog states
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [entryToDelete, setEntryToDelete] = useState<VendorLedgerEntry | null>(null)
 
-  // Edit vs Create
   const [isEditing, setIsEditing] = useState(false)
   const [editingEntry, setEditingEntry] = useState<VendorLedgerEntry | null>(null)
 
-  // The form model
   const [newEntry, setNewEntry] = useState<NewLedgerEntry>({
     date: new Date().toISOString().split('T')[0],
     challanNo: '',
@@ -71,15 +66,12 @@ const VendorDetail: React.FC = () => {
     price_per_meter: ['']
   })
 
-  // Minimal UI date filters
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
 
-  // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 20
 
-  // Optional: load all ledgers to keep them in cache
   useQuery({
     queryKey: ['ledgers'],
     queryFn: async () => {
@@ -88,14 +80,12 @@ const VendorDetail: React.FC = () => {
     }
   })
 
-  // Query for vendor data
   const { data: vendorData } = useQuery<LedgerAPIResponse>({
     queryKey: ['vendor-ledgers', slug],
     queryFn: () => ledgerApi.getLedgersByCompany(slug as string),
     enabled: !!slug
   })
 
-  // Parse vendorData into local state
   useEffect(() => {
     if (vendorData && vendorData.ledgers) {
       const updated = vendorData.ledgers.map((entry) => {
@@ -112,7 +102,7 @@ const VendorDetail: React.FC = () => {
           prices
         }
       })
-      setEntries(updated.reverse()) // Reverse the order to show new data first
+      setEntries(updated.reverse())
       if (updated.length > 0) {
         setVendorTitle(updated[0].company_name || slug || '')
       } else {
@@ -121,7 +111,6 @@ const VendorDetail: React.FC = () => {
     }
   }, [vendorData, slug])
 
-  // CREATE
   const createMutation = useMutation({
     mutationFn: (entryData: any) => ledgerApi.addLedgerEntry(entryData),
     onSuccess: async () => {
@@ -139,7 +128,6 @@ const VendorDetail: React.FC = () => {
     }
   })
 
-  // UPDATE
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string, data: any }) => ledgerApi.updateLedgerEntry(id, data),
     onSuccess: async () => {
@@ -157,7 +145,6 @@ const VendorDetail: React.FC = () => {
     }
   })
 
-  // DELETE
   const deleteMutation = useMutation({
     mutationFn: (entryId: string) => ledgerApi.deleteLedgerEntry(entryId),
     onSuccess: async () => {
@@ -176,7 +163,6 @@ const VendorDetail: React.FC = () => {
     }
   })
 
-  // Handlers
   const handleDeleteConfirmation = (entry: VendorLedgerEntry) => {
     setEntryToDelete(entry)
     setIsDeleteDialogOpen(true)
@@ -211,18 +197,16 @@ const VendorDetail: React.FC = () => {
   }
   
   const exportToExcel = () => {
-    // Convert selected dates to timestamps for comparison (if selected)
     const startTimestamp = startDate ? new Date(startDate).getTime() : null;
     const endTimestamp = endDate ? new Date(endDate).getTime() : null;
   
-    // Filter entries if both dates are selected, otherwise use all data
     const filteredEntries = entries.filter(entry => {
       const entryTimestamp = new Date(entry.date).getTime();
   
       if (startTimestamp && endTimestamp) {
         return entryTimestamp >= startTimestamp && entryTimestamp <= endTimestamp;
       }
-      return true; // Agar koi date select nahi ki to pura data return hoga
+      return true;
     });
   
     if (filteredEntries.length === 0) {
@@ -234,12 +218,10 @@ const VendorDetail: React.FC = () => {
       return;
     }
   
-    // Calculate total Debit, Credit, and Balance
     const totalDebit = filteredEntries.reduce((total, entry) => total + parseFloat(String(entry.debit || 0)), 0);
     const totalCredit = filteredEntries.reduce((total, entry) => total + parseFloat(String(entry.credit || 0)), 0);
     const totalBalance = totalDebit - totalCredit;
   
-    // Define column headers
     const headers = [
       'Date',
       'Challan No',
@@ -252,10 +234,9 @@ const VendorDetail: React.FC = () => {
       'Balance'
     ];
   
-    // Convert filtered entries to an array format
     const excelData = filteredEntries.flatMap(entry =>
       (entry.descriptions || []).map((desc, rowIndex) => ({
-        Date: rowIndex === 0 ? entry.date : '', // Merge Date for grouped rows
+        Date: rowIndex === 0 ? entry.date : '',
         'Challan No': rowIndex === 0 ? entry.challan_no : '',
         Description: desc,
         Quantity: entry.quantities?.[rowIndex] || '',
@@ -267,8 +248,18 @@ const VendorDetail: React.FC = () => {
       }))
     );
   
-    // Append total balance at the end
-    excelData.push({});
+    excelData.push({
+      Date: '',
+      'Challan No': '',
+      Description: '',
+      Quantity: '',
+      'Price per Meter': '',
+      Debit: '',
+      Credit: '',
+      'Payment Method': '',
+      Balance: ''
+    });
+  
     excelData.push({
       Date: 'Total',
       'Challan No': '',
@@ -281,14 +272,10 @@ const VendorDetail: React.FC = () => {
       Balance: totalBalance.toFixed(2)
     });
   
-    // Create a worksheet
     const worksheet = XLSX.utils.json_to_sheet([headers, ...excelData.map(obj => Object.values(obj))], { skipHeader: true });
-  
-    // Create a workbook and append the sheet
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Ledger Report');
   
-    // Write the file and trigger download
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   
@@ -315,7 +302,6 @@ const VendorDetail: React.FC = () => {
         return
       }
 
-      // Construct the API URL
       const url = `http://localhost:5000/ledger-report/${encodeURIComponent(slug)}?format=pdf&start_date=${startDate}&end_date=${endDate}`
 
       const response = await fetch(url)
@@ -351,7 +337,6 @@ const VendorDetail: React.FC = () => {
   }
 
   const handleFormSubmit = () => {
-    // validation
     if (
       !newEntry.date ||
       !newEntry.challanNo ||
@@ -378,7 +363,6 @@ const VendorDetail: React.FC = () => {
         .filter((p) => p !== '')
         .map((p) => p.replace('$', ''))
 
-      // total debit
       const debitsArr = cleanedQuantities.map(
         (quantity, idx) => quantity * Number(cleanedPricePerMeter[idx])
       )
@@ -431,7 +415,6 @@ const VendorDetail: React.FC = () => {
     setIsDialogOpen(false)
   }
 
-  // dynamic rows
   const handleChange = (field: keyof Pick<NewLedgerEntry, 'descriptions' | 'quantities' | 'price_per_meter'>, index: number, value: string) => {
     setNewEntry((prev) => {
       const copy = { ...prev }
@@ -473,8 +456,6 @@ const VendorDetail: React.FC = () => {
     setNewEntry((prev) => ({ ...prev, debit: totalDebit }))
   }
 
-  // FILTER: minimal single row with placeholders
-  // We'll do the same filtering logic with a memo
   const filteredEntries = useMemo(() => {
     if (!entries || entries.length === 0) return []
     return entries.filter((entry) => {
@@ -491,7 +472,6 @@ const VendorDetail: React.FC = () => {
   const totalDebit = entries.reduce((total, entry) => total + parseFloat(String(entry.debit || 0)), 0)
   const totalCredit = entries.reduce((total, entry) => total + parseFloat(String(entry.credit || 0)), 0)
 
-  // Pagination logic
   const totalPages = Math.ceil(filteredEntries.length / itemsPerPage)
   const paginatedEntries = filteredEntries.slice(
     (currentPage - 1) * itemsPerPage,
@@ -556,7 +536,6 @@ const VendorDetail: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-      {/* TOP BAR */}
       <div className="flex items-center py-4 justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" onClick={() => navigate(-1)}>
@@ -565,35 +544,33 @@ const VendorDetail: React.FC = () => {
           <h1 className="text-2xl font-bold">{vendorTitle || 'Loading Vendor...'}</h1>
           <Button
             onClick={handleDownloadReport}
-            variant="primary"
+            variant="default"
             className="bg-black text-white hover:bg-gray-200 hover:text-white"
           >
             <FaRegFilePdf className="w-4 h-4" />
           </Button>
           <Button
             onClick={exportToExcel}
-            variant="primary"
+            variant="default"
             className="bg-black text-white hover:bg-gray-200 hover:text-white"
           >
             <TbFileExcel  />
           </Button>
         </div>
         <Button
-          variant="primary"
+          variant="default"
           onClick={handleOpenCreateDialog}
           className="bg-black text-white hover:bg-gray-200 hover:text-white"
         >
           Add Entry
         </Button>
       </div>
-
-      {/* MINIMAL UI DATE FILTER ROW */}
       <div className="flex items-center pb-4 gap-2">
         <Input
           type="date"
           placeholder="Start date"
           value={startDate}
-          max={new Date().toISOString().split('T')[0]} // Prevent future date selection
+          max={new Date().toISOString().split('T')[0]}
           onChange={(e) => {
             const selectedDate = e.target.value;
             if (new Date(selectedDate) <= new Date()) {
@@ -605,7 +582,7 @@ const VendorDetail: React.FC = () => {
           type="date"
           placeholder="End date"
           value={endDate}
-          max={new Date().toISOString().split('T')[0]} // Prevent future date selection
+          max={new Date().toISOString().split('T')[0]}
           onChange={(e) => {
             const selectedDate = e.target.value;
             if (new Date(selectedDate) <= new Date()) {
@@ -614,8 +591,6 @@ const VendorDetail: React.FC = () => {
           }}
         />
       </div>
-
-      {/* MAIN TABLE */}
       <Card>
         <CardHeader />
         <CardContent>
@@ -796,8 +771,6 @@ const VendorDetail: React.FC = () => {
           </Table>
         </CardContent>
       </Card>
-
-      {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild />
         <DialogContent className="max-w-2xl">
@@ -805,7 +778,6 @@ const VendorDetail: React.FC = () => {
             <DialogTitle>{isEditing ? 'Edit Ledger Entry' : 'Add New Ledger Entry'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Basic fields */}
             <div className="grid grid-cols-2 gap-4">
               <Input
                 type="date"
@@ -830,7 +802,7 @@ const VendorDetail: React.FC = () => {
                 type="number"
                 placeholder="Debit"
                 value={newEntry.debit}
-                disabled // auto-calculated
+                disabled
               />
               <Input
                 type="number"
@@ -869,7 +841,6 @@ const VendorDetail: React.FC = () => {
               </div>
             </div>
 
-            {/* Multi-line items */}
             <div className="space-y-4">
               {newEntry.descriptions.map((desc, idx) => (
                 <div key={idx} className="grid grid-cols-4 gap-4">
@@ -913,8 +884,6 @@ const VendorDetail: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="min-w-[400px] h-[160px]">
           <DialogHeader>
@@ -930,8 +899,6 @@ const VendorDetail: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Pagination Controls - Positioned on the Right */}
       <div className="flex justify-end mt-4 space-x-2">
         <Button
           variant="outline"
