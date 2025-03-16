@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import * as XLSX from 'xlsx';
@@ -562,13 +563,11 @@ const VendorDetail: React.FC = () => {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <h1 className="text-2xl font-bold">{vendorTitle || 'Loading Vendor...'}</h1>
-          {/* <div style={{display:isMobile? 'flex':''}}> */}
           <Button
             onClick={handleDownloadReport}
             variant="primary"
             className="bg-black text-white hover:bg-gray-200 hover:text-white"
           >
-
             <FaRegFilePdf className="w-4 h-4" />
           </Button>
           <Button
@@ -577,9 +576,7 @@ const VendorDetail: React.FC = () => {
             className="bg-black text-white hover:bg-gray-200 hover:text-white"
           >
             <TbFileExcel  />
-            {/* Download Filtered Excel */}
           </Button>
-          {/* </div> */}
         </div>
         <Button
           variant="primary"
@@ -894,3 +891,76 @@ const VendorDetail: React.FC = () => {
                     onChange={(e) => handleChange('price_per_meter', idx, e.target.value)}
                   />
                   <Button onClick={() => handleRemoveRow(idx)} variant="destructive">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                onClick={handleAddRow}
+                className="bg-black text-white hover:bg-gray-200 hover:text-white"
+              >
+                Add More
+              </Button>
+            </div>
+
+            <Button
+              onClick={handleFormSubmit}
+              className="w-full bg-black text-white hover:bg-gray-200 hover:text-white"
+            >
+              {isEditing ? 'Update Entry' : 'Save Entry'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="min-w-[400px] h-[160px]">
+          <DialogHeader>
+            <DialogTitle>Are you sure you want to delete this entry?</DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-end space-x-2 mt-11">
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Pagination Controls - Positioned on the Right */}
+      <div className="flex justify-end mt-4 space-x-2">
+        <Button
+          variant="outline"
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-4 py-2"
+          style={{ ...Fonts.Inter }}
+        >
+          Previous
+        </Button>
+        <div className="flex items-center space-x-2">
+          <span style={{ ...Fonts.Inter }}>Page</span>
+          <span className="font-semibold" style={{ ...Fonts.Inter }}>
+            {currentPage}
+          </span>
+          <span style={{ ...Fonts.Inter }}>of {totalPages}</span>
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-4 py-2"
+          style={{ ...Fonts.Inter }}
+        >
+          Next
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+export default VendorDetail
