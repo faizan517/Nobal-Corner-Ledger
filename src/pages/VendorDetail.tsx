@@ -95,22 +95,7 @@ const VendorDetail: React.FC = () => {
         const quantities = entry.quantity ? entry.quantity.split(',') : [];
         const prices = entry.price_per_meter ? entry.price_per_meter.split(',') : [];
         
-        if (entry && entry.unit) {
-          const units = Array.isArray(entry.unit) 
-            ? entry.unit 
-            : (typeof entry.unit === 'string' ? entry.unit.split(',') : []);
-          
-          return {
-            ...entry,
-            date,
-            descriptions,
-            quantities,
-            prices,
-            units,
-          };
-        }
-
-        let units = [];
+        let units: string[] = [];
         if (entry.units) {
           units = Array.isArray(entry.units) ? entry.units : entry.units.split(',');
         } else {
