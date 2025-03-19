@@ -90,11 +90,17 @@ const VendorDetail: React.FC = () => {
   useEffect(() => {
     if (vendorData && vendorData.ledgers) {
       const updated = vendorData.ledgers.map((entry) => {
-        const date = entry.date ? entry.date.split('T')[0] : ''
-        const descriptions = entry.description ? entry.description.split(',') : []
-        const quantities = entry.quantity ? entry.quantity.split(',') : []
-        const prices = entry.price_per_meter ? entry.price_per_meter.split(',') : []
-        const units = entry.units ? entry.units.split(',') : []
+        const date = entry.date ? entry.date.split('T')[0] : '';
+        const descriptions = entry.description ? entry.description.split(',') : [];
+        const quantities = entry.quantity ? entry.quantity.split(',') : [];
+        const prices = entry.price_per_meter ? entry.price_per_meter.split(',') : [];
+        
+        let units = [];
+        if (entry.units) {
+          units = Array.isArray(entry.units) ? entry.units : entry.units.split(',');
+        } else {
+          units = Array(descriptions.length).fill('meter');
+        }
 
         return {
           ...entry,
@@ -103,8 +109,8 @@ const VendorDetail: React.FC = () => {
           quantities,
           prices,
           units
-        }
-      })
+        };
+      });
       setEntries(updated.reverse())
       if (updated.length > 0) {
         setVendorTitle(updated[0].company_name || slug || '')
@@ -358,21 +364,29 @@ const VendorDetail: React.FC = () => {
     }
 
     try {
-      const vendorName = vendorData?.ledgers?.[0]?.company_name || newEntry.vendorName || slug || ''
-      if (!vendorName) throw new Error('Company name not found')
+      const vendorName = vendorData?.ledgers?.[0]?.company_name || newEntry.vendorName || slug || '';
+      if (!vendorName) throw new Error('Company name not found');
 
-      const cleanedDescriptions = newEntry.descriptions.filter((d) => d !== '')
-      const cleanedQuantities = newEntry.quantities.filter((q) => q !== '').map((q) => Number(q))
+      const cleanedDescriptions = newEntry.descriptions.filter((d) => d !== '');
+      const cleanedQuantities = newEntry.quantities
+        .filter((q) => q !== '')
+        .map((q) => Number(q));
       const cleanedPricePerMeter = newEntry.price_per_meter
         .filter((p) => p !== '')
-        .map((p) => p.replace('$', ''))
+        .map((p) => p.replace('$', ''));
+      
+      const cleanedUnits = newEntry.units.slice(0, cleanedDescriptions.length);
+      
+      while (cleanedUnits.length < cleanedDescriptions.length) {
+        cleanedUnits.push('meter');
+      }
 
       const debitsArr = cleanedQuantities.map(
         (quantity, idx) => quantity * Number(cleanedPricePerMeter[idx])
       )
-      const totalDebit = debitsArr.reduce((acc, val) => acc + val, 0)
-      const creditNum = Number(newEntry.credit) || 0
-      const balance = totalDebit - creditNum
+      const totalDebit = debitsArr.reduce((acc, val) => acc + val, 0);
+      const creditNum = Number(newEntry.credit) || 0;
+      const balance = totalDebit - creditNum;
 
       const entryData = {
         date: newEntry.date,
@@ -385,8 +399,8 @@ const VendorDetail: React.FC = () => {
         descriptions: cleanedDescriptions,
         quantities: cleanedQuantities,
         price_per_meters: cleanedPricePerMeter,
-        units: newEntry.units
-      }
+        units: cleanedUnits
+      };
 
       if (isEditing && editingEntry) {
         updateMutation.mutate({ id: editingEntry.id, data: entryData })
