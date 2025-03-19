@@ -63,7 +63,8 @@ const VendorDetail: React.FC = () => {
     vendorName: '',
     descriptions: [''],
     quantities: [''],
-    price_per_meter: ['']
+    price_per_meter: [''],
+    units: ['meter']
   })
 
   const [startDate, setStartDate] = useState('')
@@ -93,13 +94,15 @@ const VendorDetail: React.FC = () => {
         const descriptions = entry.description ? entry.description.split(',') : []
         const quantities = entry.quantity ? entry.quantity.split(',') : []
         const prices = entry.price_per_meter ? entry.price_per_meter.split(',') : []
+        const units = entry.units ? entry.units.split(',') : []
 
         return {
           ...entry,
           date,
           descriptions,
           quantities,
-          prices
+          prices,
+          units
         }
       })
       setEntries(updated.reverse())
@@ -183,6 +186,7 @@ const VendorDetail: React.FC = () => {
       descriptions: entry.descriptions || [''],
       quantities: entry.quantities || [''],
       price_per_meter: entry.prices || [''],
+      units: entry.units || ['meter'],
       debit: entry.debit || '',
       credit: entry.credit || '',
       paymentMethod: entry.payment_method || 'cash',
@@ -380,7 +384,8 @@ const VendorDetail: React.FC = () => {
         payment_method: newEntry.paymentMethod,
         descriptions: cleanedDescriptions,
         quantities: cleanedQuantities,
-        price_per_meters: cleanedPricePerMeter
+        price_per_meters: cleanedPricePerMeter,
+        units: newEntry.units
       }
 
       if (isEditing && editingEntry) {
@@ -408,7 +413,8 @@ const VendorDetail: React.FC = () => {
       vendorName: '',
       descriptions: [''],
       quantities: [''],
-      price_per_meter: ['']
+      price_per_meter: [''],
+      units: ['meter']
     })
     setIsEditing(false)
     setEditingEntry(null)
@@ -429,7 +435,8 @@ const VendorDetail: React.FC = () => {
       ...prev,
       descriptions: [...prev.descriptions, ''],
       quantities: [...prev.quantities, ''],
-      price_per_meter: [...prev.price_per_meter, '']
+      price_per_meter: [...prev.price_per_meter, ''],
+      units: [...prev.units, 'meter']
     }))
   }
 
@@ -439,6 +446,7 @@ const VendorDetail: React.FC = () => {
       copy.descriptions.splice(idx, 1)
       copy.quantities.splice(idx, 1)
       copy.price_per_meter.splice(idx, 1)
+      copy.units.splice(idx, 1)
       return copy
     })
     updateDebit()

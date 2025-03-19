@@ -36,6 +36,7 @@ const AddLedgerDialog = ({
       descriptions: [''],
       quantities: [''],
       price_per_meter: [''],
+      units: ['meter'],
       date: '',
       vendor_name: '',
       challan_no: '',
