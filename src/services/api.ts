@@ -1,5 +1,6 @@
+
 // API base URL
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'https://ncvl-api.thementorhealth.com/api';
 
 // User APIs
 export const userApi = {
@@ -17,27 +18,23 @@ export const userApi = {
     return response.json();
   },
 
-  login: async (credentials: { username: string; password: string }) => {
-    try {
-      const response = await fetch(`${BASE_URL}/users/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Invalid username or password');
-      }
-      
-      return data;
-    } catch (error: any) {
-      if (error.message === 'Invalid credentials') {
-        throw new Error('Invalid username or password');
-      }
-      throw new Error('Login failed. Please try again.');
+  login: async (credentials: { email: string; password: string }) => {
+    console.log("Sending login request with credentials:", credentials);
+    
+    const response = await fetch(`${BASE_URL}/users/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Login failed with status:", response.status);
+      console.error("Error response:", errorData);
+      throw new Error(`Login failed: ${errorData.message || 'Unknown error'}`);
     }
+    
+    return response.json();
   },
 
   updateUser: async (id: string, userData: any) => {
@@ -55,6 +52,12 @@ export const userApi = {
       method: 'DELETE',
     });
     if (!response.ok) throw new Error('Delete failed');
+    return response.json();
+  },
+  
+  getAllUsers: async () => {
+    const response = await fetch(`${BASE_URL}/users/getall`);
+    if (!response.ok) throw new Error("Failed to fetch users");
     return response.json();
   },
 };
@@ -104,15 +107,7 @@ export const ledgerApi = {
       const response = await fetch(`${BASE_URL}/ledgers/addnew`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...entryData,
-          // Ensure units are properly formatted, convert array to comma-separated string if needed
-          units: Array.isArray(entryData.units) ? entryData.units.join(',') : entryData.units,
-          // Make sure descriptions, quantities, and prices are properly formatted
-          descriptions: Array.isArray(entryData.descriptions) ? entryData.descriptions.join(',') : entryData.descriptions,
-          quantities: Array.isArray(entryData.quantities) ? entryData.quantities.join(',') : entryData.quantities,
-          price_per_meters: Array.isArray(entryData.price_per_meters) ? entryData.price_per_meters.join(',') : entryData.price_per_meters
-        }),
+        body: JSON.stringify(entryData),
       });
       
       if (!response.ok) {
@@ -130,18 +125,10 @@ export const ledgerApi = {
   updateLedgerEntry: async (id: string, entryData: any) => {
     console.log('Updating data for ID:', id, 'with data:', entryData);
     try {
-      const response = await fetch(`${BASE_URL}/ledgers/${id}`, {
+      const response = await fetch(`${BASE_URL}/ledgers/update/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...entryData,
-          // Ensure units are properly formatted, convert array to comma-separated string if needed
-          units: Array.isArray(entryData.units) ? entryData.units.join(',') : entryData.units,
-          // Make sure descriptions, quantities, and prices are properly formatted
-          descriptions: Array.isArray(entryData.descriptions) ? entryData.descriptions.join(',') : entryData.descriptions,
-          quantities: Array.isArray(entryData.quantities) ? entryData.quantities.join(',') : entryData.quantities,
-          price_per_meters: Array.isArray(entryData.price_per_meters) ? entryData.price_per_meters.join(',') : entryData.price_per_meters
-        }),
+        body: JSON.stringify(entryData),
       });
       
       if (!response.ok) {
@@ -157,15 +144,15 @@ export const ledgerApi = {
   },
 
   deleteLedgerEntry: async (id: string) => {
-    const response = await fetch(`${BASE_URL}/ledgers/${id}`, {
+    const response = await fetch(`${BASE_URL}/ledgers/delete/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) throw new Error('Failed to delete ledger entry');
     return response.json();
   },
 
-  getLedgersByCompany: async (vendorId: string) => {
-    const response = await fetch(`${BASE_URL}/ledgers/company/${vendorId}`);
+  getLedgersByCompany: async (vendorName: string) => {
+    const response = await fetch(`${BASE_URL}/ledgers/ledgers/${vendorName}`);
     if (!response.ok) throw new Error('Failed to fetch company ledgers');
     return response.json();
   },
@@ -176,8 +163,8 @@ export const ledgerApi = {
     return response.json();
   },
 
-  getLedgerReport: async (companyName: string, startDate: string, endDate: string, format: 'pdf' | 'excel' = 'pdf') => {
-    const url = `${BASE_URL}/ledger-report/${encodeURIComponent(companyName)}?format=${format}&start_date=${startDate}&end_date=${endDate}`;
+  getLedgerReport: async (vendorName: string, startDate: string, endDate: string, format: 'pdf' | 'excel' = 'pdf') => {
+    const url = `${BASE_URL}/ledger-report/${encodeURIComponent(vendorName)}?format=${format}&start_date=${startDate}&end_date=${endDate}`;
     const response = await fetch(url);
     
     if (!response.ok) {
