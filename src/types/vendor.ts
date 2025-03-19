@@ -30,7 +30,7 @@ export interface NewLedgerEntry {
   descriptions: string[];
   quantities: string[];
   price_per_meter: string[];
-  units?: string[];
+  units: string[];
 }
 
 export interface LedgerAPIResponse {

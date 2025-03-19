@@ -22,7 +22,7 @@ export interface LedgerEntry {
   descriptions: string[];
   quantities: number[];
   price_per_meters: string[];
-  units?: string[];
+  units: string[];
 }
 
 export interface LedgerEntryFormData {
