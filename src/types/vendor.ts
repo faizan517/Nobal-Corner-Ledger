@@ -16,6 +16,7 @@ export interface VendorLedgerEntry {
   descriptions?: string[];
   quantities?: string[];
   prices?: string[];
+  units?: string[];
 }
 
 export interface NewLedgerEntry {
@@ -29,6 +30,7 @@ export interface NewLedgerEntry {
   descriptions: string[];
   quantities: string[];
   price_per_meter: string[];
+  units?: string[];
 }
 
 export interface LedgerAPIResponse {

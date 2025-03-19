@@ -22,12 +22,14 @@ export interface LedgerEntry {
   descriptions: string[];
   quantities: number[];
   price_per_meters: string[];
+  units?: string[];
 }
 
 export interface LedgerEntryFormData {
   descriptions: string[];
   quantities: string[];
   price_per_meter: string[];
+  units: string[];
   date: string;
   vendor_name: string;
   phone_no?: string;

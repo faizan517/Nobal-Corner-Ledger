@@ -22,6 +22,7 @@ const LedgerManagement = () => {
     descriptions: [''],
     quantities: [''],
     price_per_meter: [''],
+    units: ['meter'],
     date: '',
     vendor_name: '',
     phone_no: '',
@@ -63,6 +64,7 @@ const LedgerManagement = () => {
         descriptions: [''],
         quantities: [''],
         price_per_meter: [''],
+        units: ['meter'],
         date: '',
         vendor_name: '',
         phone_no: '',
@@ -87,6 +89,7 @@ const LedgerManagement = () => {
     const cleanedDescriptions = newEntry.descriptions.filter(d => d !== '');
     const cleanedQuantities = newEntry.quantities.filter(q => q !== '').map(q => Number(q));
     const cleanedPricePerMeter = newEntry.price_per_meter.filter(p => p !== '').map(p => p.replace('$', ''));
+    const cleanedUnits = newEntry.units.filter((_, i) => newEntry.descriptions[i] !== '');
     const debits = cleanedQuantities.map((quantity, index) => quantity * Number(cleanedPricePerMeter[index]));
     const balance = newEntry.credit 
       ? debits.reduce((acc, debit) => acc + debit, 0) - Number(newEntry.credit) 
@@ -104,7 +107,8 @@ const LedgerManagement = () => {
       descriptions: cleanedDescriptions,
       quantities: cleanedQuantities,
       price_per_meters: cleanedPricePerMeter,
-      cheque_number: newEntry.cheque_number
+      cheque_number: newEntry.cheque_number,
+      units: cleanedUnits
     };
 
     addLedgerMutation.mutate(entryData);

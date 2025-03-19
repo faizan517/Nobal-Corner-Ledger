@@ -26,7 +26,8 @@ const LedgerEntryForm = ({ vendors, newEntry, setNewEntry, onSave }: LedgerEntry
       ...newEntry,
       descriptions: [...newEntry.descriptions, ''],
       quantities: [...newEntry.quantities, ''],
-      price_per_meter: [...newEntry.price_per_meter, '']
+      price_per_meter: [...newEntry.price_per_meter, ''],
+      units: [...(newEntry.units || []), 'meter']
     });
   };
 
@@ -34,16 +35,23 @@ const LedgerEntryForm = ({ vendors, newEntry, setNewEntry, onSave }: LedgerEntry
     const updatedDescriptions = newEntry.descriptions.filter((_, i) => i !== index);
     const updatedQuantities = newEntry.quantities.filter((_, i) => i !== index);
     const updatedPricePerMtr = newEntry.price_per_meter.filter((_, i) => i !== index);
+    const updatedUnits = (newEntry.units || []).filter((_, i) => i !== index);
+    
     setNewEntry({
       ...newEntry,
       descriptions: updatedDescriptions,
       quantities: updatedQuantities,
-      price_per_meter: updatedPricePerMtr
+      price_per_meter: updatedPricePerMtr,
+      units: updatedUnits
     });
   };
 
-  const handleChange = (field: 'descriptions' | 'quantities' | 'price_per_meter', index: number, value: string) => {
-    const updatedField = [...newEntry[field]];
+  const handleChange = (
+    field: 'descriptions' | 'quantities' | 'price_per_meter' | 'units', 
+    index: number, 
+    value: string
+  ) => {
+    const updatedField = [...(newEntry[field] || [])];
     updatedField[index] = value;
 
     if (field === 'quantities' || field === 'price_per_meter') {
@@ -81,6 +89,12 @@ const LedgerEntryForm = ({ vendors, newEntry, setNewEntry, onSave }: LedgerEntry
     }
     onSave();
   };
+
+  // Ensure units array exists
+  if (!newEntry.units || newEntry.units.length !== newEntry.descriptions.length) {
+    const updatedUnits = Array(newEntry.descriptions.length).fill('meter');
+    setNewEntry({ ...newEntry, units: updatedUnits });
+  }
 
   return (
     <form onSubmit={handleSubmit}>
@@ -156,7 +170,7 @@ const LedgerEntryForm = ({ vendors, newEntry, setNewEntry, onSave }: LedgerEntry
 
         <div className="space-y-4">
           {newEntry.descriptions.map((description, idx) => (
-            <div key={idx} className="grid grid-cols-4 gap-4">
+            <div key={idx} className="grid grid-cols-5 gap-4">
               <Input
                 value={newEntry.descriptions[idx]}
                 placeholder="Description"
@@ -168,10 +182,22 @@ const LedgerEntryForm = ({ vendors, newEntry, setNewEntry, onSave }: LedgerEntry
                 placeholder="Quantity"
                 onChange={(e) => handleChange('quantities', idx, e.target.value)}
               />
+              <Select
+                value={newEntry.units?.[idx] || 'meter'}
+                onValueChange={(value) => handleChange('units', idx, value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="meter">Meter</SelectItem>
+                  <SelectItem value="box">Box</SelectItem>
+                </SelectContent>
+              </Select>
               <Input
                 type="number"
                 value={newEntry.price_per_meter[idx]}
-                placeholder="Price per Meter"
+                placeholder={newEntry.units?.[idx] === 'box' ? "Price per Box" : "Price per Meter"}
                 onChange={(e) => handleChange('price_per_meter', idx, e.target.value)}
               />
               <Button 
