@@ -97,7 +97,11 @@ const VendorDetail: React.FC = () => {
         
         let units: string[] = [];
         if (entry.units) {
-          units = Array.isArray(entry.units) ? entry.units : entry.units.split(',');
+          if (Array.isArray(entry.units)) {
+            units = entry.units;
+          } else if (typeof entry.units === 'string') {
+            units = entry.units.split(',');
+          }
         } else {
           units = Array(descriptions.length).fill('meter');
         }
