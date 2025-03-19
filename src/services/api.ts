@@ -100,50 +100,60 @@ export const vendorApi = {
 export const ledgerApi = {
   addLedgerEntry: async (entryData: any) => {
     console.log('Sending data to API:', entryData);
-    const response = await fetch(`${BASE_URL}/ledgers/addnew`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...entryData,
-        // Ensure units are properly formatted, convert array to comma-separated string if needed
-        units: Array.isArray(entryData.units) ? entryData.units.join(',') : entryData.units,
-        // Make sure descriptions, quantities, and prices are properly formatted
-        descriptions: Array.isArray(entryData.descriptions) ? entryData.descriptions.join(',') : entryData.descriptions,
-        quantities: Array.isArray(entryData.quantities) ? entryData.quantities.join(',') : entryData.quantities,
-        price_per_meters: Array.isArray(entryData.price_per_meters) ? entryData.price_per_meters.join(',') : entryData.price_per_meters
-      }),
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('API Error Response:', errorData);
-      throw new Error(`Failed to add ledger entry: ${errorData.message || response.statusText}`);
+    try {
+      const response = await fetch(`${BASE_URL}/ledgers/addnew`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...entryData,
+          // Ensure units are properly formatted, convert array to comma-separated string if needed
+          units: Array.isArray(entryData.units) ? entryData.units.join(',') : entryData.units,
+          // Make sure descriptions, quantities, and prices are properly formatted
+          descriptions: Array.isArray(entryData.descriptions) ? entryData.descriptions.join(',') : entryData.descriptions,
+          quantities: Array.isArray(entryData.quantities) ? entryData.quantities.join(',') : entryData.quantities,
+          price_per_meters: Array.isArray(entryData.price_per_meters) ? entryData.price_per_meters.join(',') : entryData.price_per_meters
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('API Error Response:', errorData);
+        throw new Error(`Failed to add ledger entry: ${errorData.message || response.statusText}`);
+      }
+      return response.json();
+    } catch (error: any) {
+      console.error('Error in addLedgerEntry:', error);
+      throw error;
     }
-    return response.json();
   },
 
   updateLedgerEntry: async (id: string, entryData: any) => {
     console.log('Updating data for ID:', id, 'with data:', entryData);
-    const response = await fetch(`${BASE_URL}/ledgers/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...entryData,
-        // Ensure units are properly formatted, convert array to comma-separated string if needed
-        units: Array.isArray(entryData.units) ? entryData.units.join(',') : entryData.units,
-        // Make sure descriptions, quantities, and prices are properly formatted
-        descriptions: Array.isArray(entryData.descriptions) ? entryData.descriptions.join(',') : entryData.descriptions,
-        quantities: Array.isArray(entryData.quantities) ? entryData.quantities.join(',') : entryData.quantities,
-        price_per_meters: Array.isArray(entryData.price_per_meters) ? entryData.price_per_meters.join(',') : entryData.price_per_meters
-      }),
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('API Error Response:', errorData);
-      throw new Error(`Failed to update ledger entry: ${errorData.message || response.statusText}`);
+    try {
+      const response = await fetch(`${BASE_URL}/ledgers/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...entryData,
+          // Ensure units are properly formatted, convert array to comma-separated string if needed
+          units: Array.isArray(entryData.units) ? entryData.units.join(',') : entryData.units,
+          // Make sure descriptions, quantities, and prices are properly formatted
+          descriptions: Array.isArray(entryData.descriptions) ? entryData.descriptions.join(',') : entryData.descriptions,
+          quantities: Array.isArray(entryData.quantities) ? entryData.quantities.join(',') : entryData.quantities,
+          price_per_meters: Array.isArray(entryData.price_per_meters) ? entryData.price_per_meters.join(',') : entryData.price_per_meters
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('API Error Response:', errorData);
+        throw new Error(`Failed to update ledger entry: ${errorData.message || response.statusText}`);
+      }
+      return response.json();
+    } catch (error: any) {
+      console.error('Error in updateLedgerEntry:', error);
+      throw error;
     }
-    return response.json();
   },
 
   deleteLedgerEntry: async (id: string) => {
