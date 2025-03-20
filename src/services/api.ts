@@ -1,6 +1,5 @@
-
 // API base URL
-const BASE_URL = 'https://ncvl-api.thementorhealth.com/api';
+export const BASE_URL = 'https://ncvl-api.thementorhealth.com/api';
 
 // User APIs
 export const userApi = {

@@ -17,7 +17,8 @@ const Login = () => {
   const loginMutation = useMutation({
     mutationFn: async (credentials: { username: string; password: string }) => {
       try {
-        return await userApi.login(credentials);
+        // Map username to email as expected by the API
+        return await userApi.login({ email: credentials.username, password: credentials.password });
       } catch (error: any) {
         throw new Error(error.message || 'Login failed');
       }

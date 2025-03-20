@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as XLSX from 'xlsx';
@@ -339,14 +338,15 @@ const VendorDetail: React.FC = () => {
     try {
       if (!slug) {
         toast({
-          title: 'Error',
-          description: 'Vendor name is missing',
-          variant: 'destructive'
+          title: "Error",
+          description: "Vendor name is missing",
+          variant: "destructive",
         });
         return;
       }
 
-      const url = `${ledgerApi.BASE_URL || 'https://ncvl-api.thementorhealth.com/api'}/ledger-report/${encodeURIComponent(slug)}?format=pdf&start_date=${startDate}&end_date=${endDate}`;
+      const url = `https://ncvl-api.thementorhealth.com/api/ledger-report/${encodeURIComponent(slug)}?format=pdf&start_date=${startDate}&end_date=${endDate}`;
+      console.log("Fetching PDF from:", url);
 
       const response = await fetch(url);
 
