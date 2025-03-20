@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LedgerEntryFormData, Vendor } from '@/types/ledgerTypes';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,17 @@ interface LedgerEntryFormProps {
 }
 
 const LedgerEntryForm = ({ vendors, newEntry, setNewEntry, onSave }: LedgerEntryFormProps) => {
+  // Make sure the units array is properly initialized
+  useEffect(() => {
+    if (!newEntry.units || newEntry.units.length !== newEntry.descriptions.length) {
+      const updatedUnits = [...(newEntry.units || [])];
+      while (updatedUnits.length < newEntry.descriptions.length) {
+        updatedUnits.push('meter');
+      }
+      setNewEntry({ ...newEntry, units: updatedUnits });
+    }
+  }, [newEntry.descriptions.length]);
+
   const handleAddRow = () => {
     setNewEntry({
       ...newEntry,
@@ -176,13 +187,13 @@ const LedgerEntryForm = ({ vendors, newEntry, setNewEntry, onSave }: LedgerEntry
           {newEntry.descriptions.map((description, idx) => (
             <div key={idx} className="grid grid-cols-5 gap-4">
               <Input
-                value={newEntry.descriptions[idx]}
+                value={newEntry.descriptions[idx] || ''}
                 placeholder="Description"
                 onChange={(e) => handleChange('descriptions', idx, e.target.value)}
               />
               <Input
                 type="number"
-                value={newEntry.quantities[idx]}
+                value={newEntry.quantities[idx] || ''}
                 placeholder="Quantity"
                 onChange={(e) => handleChange('quantities', idx, e.target.value)}
               />
@@ -200,7 +211,7 @@ const LedgerEntryForm = ({ vendors, newEntry, setNewEntry, onSave }: LedgerEntry
               </Select>
               <Input
                 type="number"
-                value={newEntry.price_per_meter[idx]}
+                value={newEntry.price_per_meter[idx] || ''}
                 placeholder={newEntry.units?.[idx] === 'box' ? "Price per Box" : "Price per Meter"}
                 onChange={(e) => handleChange('price_per_meter', idx, e.target.value)}
               />

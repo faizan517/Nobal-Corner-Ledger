@@ -22,6 +22,9 @@ export interface LedgerEntry {
   quantity?: string; // Comma-separated
   price_per_meter?: string; // Comma-separated
   units?: string[] | string; // Array or comma-separated
+  descriptions?: string[]; // For direct array access
+  quantities?: string[]; // For direct array access
+  prices?: string[]; // For direct array access
 }
 
 export interface LedgerEntryFormData {
@@ -36,5 +39,5 @@ export interface LedgerEntryFormData {
   descriptions: string[];
   quantities: string[];
   price_per_meter: string[];
-  units?: string[];
+  units: string[];
 }
