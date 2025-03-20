@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Table,
   TableBody,
@@ -8,82 +8,85 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
+} from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from '@/components/ui/select';
-import { Card } from '@/components/ui/card';
-import { Plus, Eye, Trash2, Search } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
-import { ledgerApi } from '@/services/api';
-import { Fonts } from '@/utils/Font.jsx';
-import { useIsMobile } from '@/hooks/use-mobile';
+} from '@/components/ui/select'
+import { Card } from '@/components/ui/card'
+import { Plus, Trash2, Search } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { useToast } from '@/hooks/use-toast'
+import { ledgerApi } from '@/services/api'
+import { Fonts } from '@/utils/Font.jsx'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 interface Vendor {
-  id?: number;
-  company_name: string;
-  supplier_name: string;
-  phone_no: string;
-  balance: number;
+  id?: number
+  company_name: string
+  supplier_name: string
+  phone_no: string
+  balance: number
 }
 
 interface LedgerEntry {
-  date: string;
-  vendor_name: string;
-  phone_no?: string;
-  challan_no: string;
-  debit: number;
-  credit?: number;
-  balance: number;
-  payment_method: string;
-  cheque_number?: string;
-  descriptions: string[];
-  quantities: number[];
-  price_per_meters: string[];
+  date: string
+  vendor_name: string
+  phone_no?: string
+  challan_no: string
+  debit: number
+  credit?: number
+  balance: number
+  payment_method: string
+  cheque_number?: string
+  descriptions: string[]
+  quantities: number[]
+  price_per_meters: string[]
+  units?: string[]
 }
 
 interface NewLedgerEntry {
-  descriptions: string[];
-  quantities: string[];
-  price_per_meter: string[];
-  date: string;
-  vendor_name: string;
-  phone_no?: string;
-  challan_no: string;
-  debit: string | number;
-  credit: string | number;
-  balance: string | number;
-  payment_method: string;
-  cheque_number?: string;
+  descriptions: string[]
+  quantities: string[]
+  price_per_meter: string[]
+  units?: string[]
+  date: string
+  vendor_name: string
+  phone_no?: string
+  challan_no: string
+  debit: string | number
+  credit: string | number
+  balance: string | number
+  payment_method: string
+  cheque_number?: string
 }
 
 const LedgerManagement = () => {
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const vendorsPerPage = 10;
+  const navigate = useNavigate()
+  const isMobile = useIsMobile()
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const [searchTerm, setSearchTerm] = useState<string>('')
+  const vendorsPerPage = 10
   const [newEntry, setNewEntry] = useState<NewLedgerEntry>({
     descriptions: [''],
     quantities: [''],
     price_per_meter: [''],
+    units: ['meter'],
     date: '',
     vendor_name: '',
     phone_no: '',
@@ -92,7 +95,7 @@ const LedgerManagement = () => {
     credit: '',
     balance: '',
     payment_method: ''
-  });
+  })
 
   const {
     data: ledgerData = [],
@@ -102,33 +105,34 @@ const LedgerManagement = () => {
     queryKey: ['ledgers'],
     queryFn: async () => {
       try {
-        const data = await ledgerApi.getAllLedgers();
+        const data = await ledgerApi.getAllLedgers()
         console.log('Fetched ledger data:', data);
-        return data;
+        return data
       } catch (error) {
-        console.error('Error fetching ledgers:', error);
-        throw error;
+        console.error('Error fetching ledgers:', error)
+        throw error
       }
     }
-  });
+  })
 
   // Ensure ledger is always an array
-  const ledger: Vendor[] = Array.isArray(ledgerData?.companies) ? ledgerData.companies : [];
+  const ledger: Vendor[] = Array.isArray(ledgerData?.companies) ? ledgerData.companies : []
   console.log('Processed ledger array:', ledger);
 
   const addLedgerMutation = useMutation({
     mutationFn: (newEntry: LedgerEntry) => ledgerApi.addLedgerEntry(newEntry),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ledgers'] });
+      queryClient.invalidateQueries({ queryKey: ['ledgers'] })
       toast({
         title: 'Success',
         description: 'Ledger entry added successfully'
-      });
-      setIsDialogOpen(false);
+      })
+      setIsDialogOpen(false)
       setNewEntry({
         descriptions: [''],
         quantities: [''],
         price_per_meter: [''],
+        units: ['meter'],
         date: '',
         vendor_name: '',
         phone_no: '',
@@ -137,30 +141,36 @@ const LedgerManagement = () => {
         credit: '',
         balance: '',
         payment_method: ''
-      });
+      })
     },
     onError: (error: any) => {
-      console.log(error);
+      console.log(error)
       toast({
         title: 'Error',
         description: error.response?.data?.message || error.message,
         variant: 'destructive'
-      });
+      })
     }
-  });
+  })
 
   const handleSave = () => {
-    const cleanedDescriptions = newEntry.descriptions.filter((d) => d !== '');
-    const cleanedQuantities = newEntry.quantities.filter((q) => q !== '').map((q) => Number(q));
+    const cleanedDescriptions = newEntry.descriptions.filter((d) => d !== '')
+    const cleanedQuantities = newEntry.quantities.filter((q) => q !== '').map((q) => Number(q))
     const cleanedPricePerMeter = newEntry.price_per_meter
       .filter((p) => p !== '')
-      .map((p) => p.replace('$', ''));
+      .map((p) => p.replace('$', ''))
+    const cleanedUnits = (newEntry.units || []).filter((_, i) => 
+      newEntry.descriptions[i] !== '' && 
+      newEntry.quantities[i] !== '' && 
+      newEntry.price_per_meter[i] !== ''
+    )
+
     const debits = cleanedQuantities.map(
       (quantity, index) => quantity * Number(cleanedPricePerMeter[index])
-    );
+    )
     const balance = newEntry.credit
       ? debits.reduce((acc, debit) => acc + debit, 0) - Number(newEntry.credit)
-      : debits.reduce((acc, debit) => acc + debit, 0);
+      : debits.reduce((acc, debit) => acc + debit, 0)
 
     const entryData: LedgerEntry = {
       date: newEntry.date,
@@ -174,26 +184,27 @@ const LedgerManagement = () => {
       descriptions: cleanedDescriptions,
       quantities: cleanedQuantities,
       price_per_meters: cleanedPricePerMeter,
+      units: cleanedUnits,
       cheque_number: newEntry.cheque_number
-    };
+    }
 
-    addLedgerMutation.mutate(entryData);
-  };
+    addLedgerMutation.mutate(entryData)
+  }
 
   const handleViewDetails = (entry: Vendor) => {
     if (entry.company_name) {
-      navigate(`/vendor-detail/${entry.company_name}`);
+      navigate(`/vendor-detail/${entry.company_name}`)
     } else {
-      console.log('Slug is undefined for this entry');
+      console.log('Slug is undefined for this entry')
     }
-  };
+  }
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Loading...</div>
   }
 
   if (isError) {
-    return <div>Error fetching ledger entries.</div>;
+    return <div>Error fetching ledger entries.</div>
   }
 
   const handleAddRow = () => {
@@ -201,78 +212,86 @@ const LedgerManagement = () => {
       ...newEntry,
       descriptions: [...newEntry.descriptions, ''],
       quantities: [...newEntry.quantities, ''],
-      price_per_meter: [...newEntry.price_per_meter, '']
-    });
-  };
+      price_per_meter: [...newEntry.price_per_meter, ''],
+      units: [...(newEntry.units || []), 'meter']
+    })
+  }
 
   const handleRemoveRow = (index: number) => {
-    const updatedDescriptions = newEntry.descriptions.filter((_, i) => i !== index);
-    const updatedQuantities = newEntry.quantities.filter((_, i) => i !== index);
-    const updatedPricePerMtr = newEntry.price_per_meter.filter((_, i) => i !== index);
+    // Don't remove the last row
+    if (newEntry.descriptions.length === 1) {
+      return;
+    }
+    
+    const updatedDescriptions = newEntry.descriptions.filter((_, i) => i !== index)
+    const updatedQuantities = newEntry.quantities.filter((_, i) => i !== index)
+    const updatedPricePerMtr = newEntry.price_per_meter.filter((_, i) => i !== index)
+    const updatedUnits = (newEntry.units || []).filter((_, i) => i !== index)
+    
     setNewEntry({
       ...newEntry,
       descriptions: updatedDescriptions,
       quantities: updatedQuantities,
-      price_per_meter: updatedPricePerMtr
-    });
-  };
+      price_per_meter: updatedPricePerMtr,
+      units: updatedUnits
+    })
+  }
 
   const handleChange = (
-    field: 'descriptions' | 'quantities' | 'price_per_meter',
+    field: 'descriptions' | 'quantities' | 'price_per_meter' | 'units',
     index: number,
     value: string
   ) => {
-    const updatedField = [...newEntry[field]];
-    updatedField[index] = value;
+    const updatedField = [...(newEntry[field] || [])]
+    updatedField[index] = value
 
     if (field === 'quantities' || field === 'price_per_meter') {
-      const updatedQuantities = [...newEntry.quantities];
-      const updatedPricePerMeter = [...newEntry.price_per_meter];
+      const updatedQuantities = [...newEntry.quantities]
+      const updatedPricePerMeter = [...newEntry.price_per_meter]
 
-      if (field === 'quantities') updatedQuantities[index] = value;
-      if (field === 'price_per_meter') updatedPricePerMeter[index] = value;
+      if (field === 'quantities') updatedQuantities[index] = value
+      if (field === 'price_per_meter') updatedPricePerMeter[index] = value
 
       const newDebits = updatedQuantities.map(
         (quantity, i) => Number(quantity || 0) * Number(updatedPricePerMeter[i] || 0)
-      );
-      const totalDebit = newDebits.reduce((acc, debit) => acc + debit, 0);
+      )
+      const totalDebit = newDebits.reduce((acc, debit) => acc + debit, 0)
       setNewEntry({
         ...newEntry,
         [field]: updatedField,
         debit: totalDebit
-      });
+      })
     } else {
       setNewEntry({
         ...newEntry,
         [field]: updatedField
-      });
+      })
     }
-  };
+  }
 
   const filteredVendors = ledger.filter(
     (vendor) =>
       vendor.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       vendor.supplier_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       vendor.phone_no.includes(searchTerm)
-  );
+  )
 
   // Ensure pagination works on filtered data
-  const totalPages = Math.ceil(filteredVendors.length / vendorsPerPage);
-  const indexOfLastVendor = currentPage * vendorsPerPage;
-  const indexOfFirstVendor = indexOfLastVendor - vendorsPerPage;
-  const currentVendors = filteredVendors.slice(indexOfFirstVendor, indexOfLastVendor);
+  const totalPages = Math.ceil(filteredVendors.length / vendorsPerPage)
+  const indexOfLastVendor = currentPage * vendorsPerPage
+  const indexOfFirstVendor = indexOfLastVendor - vendorsPerPage
+  const currentVendors = filteredVendors.slice(indexOfFirstVendor, indexOfLastVendor)
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
+      setCurrentPage(page)
     }
-  };
+  }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to the first page whenever the search term changes
-  };
-  
+    setSearchTerm(e.target.value)
+    setCurrentPage(1) // Reset to the first page whenever the search term changes
+  }
   return (
     <div className="space-y-4 p-4 md:p-6">
       <div className="flex flex-col justify-center items-center sm:flex-row lg:justify-between lg:items-start sm:items-center gap-4">
@@ -287,6 +306,7 @@ const LedgerManagement = () => {
                   descriptions: [''],
                   quantities: [''],
                   price_per_meter: [''],
+                  units: ['meter'],
                   date: '',
                   vendor_name: '',
                   challan_no: '',
@@ -309,7 +329,7 @@ const LedgerManagement = () => {
             </DialogHeader>
             <form
               onSubmit={(e) => {
-                e.preventDefault();
+                e.preventDefault()
                 if (
                   !newEntry.date ||
                   !newEntry.vendor_name ||
@@ -320,10 +340,10 @@ const LedgerManagement = () => {
                   newEntry.price_per_meter.some((p) => !p) ||
                   (newEntry.payment_method === 'cheque' && !newEntry.cheque_number)
                 ) {
-                  alert('Please fill in all required fields.');
-                  return;
+                  alert('Please fill in all required fields.')
+                  return
                 }
-                handleSave();
+                handleSave()
               }}
             >
               <div className="space-y-4">
@@ -394,7 +414,7 @@ const LedgerManagement = () => {
                 </div>
                 <div className="space-y-4">
                   {newEntry.descriptions.map((description, idx) => (
-                    <div key={idx} className="grid grid-cols-4 gap-4">
+                    <div key={idx} className="grid grid-cols-5 gap-3">
                       <Input
                         value={newEntry.descriptions[idx]}
                         placeholder="Description"
@@ -406,16 +426,29 @@ const LedgerManagement = () => {
                         placeholder="Quantity"
                         onChange={(e) => handleChange('quantities', idx, e.target.value)}
                       />
+                      <Select
+                        value={newEntry.units?.[idx] || 'meter'}
+                        onValueChange={(value) => handleChange('units', idx, value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Unit" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="meter">Meter</SelectItem>
+                          <SelectItem value="box">Box</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <Input
                         type="number"
                         value={newEntry.price_per_meter[idx]}
-                        placeholder="Price per Meter"
+                        placeholder={newEntry.units?.[idx] === 'box' ? "Price per Box" : "Price per Meter"}
                         onChange={(e) => handleChange('price_per_meter', idx, e.target.value)}
                       />
                       <Button
                         type="button"
                         onClick={() => handleRemoveRow(idx)}
                         variant="destructive"
+                        disabled={newEntry.descriptions.length === 1}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -473,10 +506,10 @@ const LedgerManagement = () => {
             {currentVendors.map((vendor: Vendor, index: number) => (
               <TableRow key={index}>
                 <TableCell style={{ ...Fonts.Roboto, fontSize: isMobile ? '12px' : '14px' }}>
-                  {vendor.company_name.charAt(0).toUpperCase() + vendor.company_name.slice(1)}
+                {vendor.company_name.charAt(0).toUpperCase() + vendor.company_name.slice(1)}
                 </TableCell>
                 <TableCell style={{ ...Fonts.Roboto, fontSize: isMobile ? '12px' : '14px' }}>
-                  {vendor.supplier_name.charAt(0).toUpperCase() + vendor.supplier_name.slice(1)}
+                {vendor.supplier_name.charAt(0).toUpperCase() + vendor.supplier_name.slice(1)}
                 </TableCell>
                 <TableCell style={{ ...Fonts.Roboto, fontSize: isMobile ? '12px' : '14px' }}>
                   {vendor.phone_no}
@@ -527,7 +560,7 @@ const LedgerManagement = () => {
         </Button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default LedgerManagement;
+export default LedgerManagement

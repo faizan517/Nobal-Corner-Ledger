@@ -32,6 +32,10 @@ const LedgerEntryForm = ({ vendors, newEntry, setNewEntry, onSave }: LedgerEntry
   };
 
   const handleRemoveRow = (index: number) => {
+    if (newEntry.descriptions.length <= 1) {
+      return; // Don't remove the last row
+    }
+    
     const updatedDescriptions = newEntry.descriptions.filter((_, i) => i !== index);
     const updatedQuantities = newEntry.quantities.filter((_, i) => i !== index);
     const updatedPricePerMtr = newEntry.price_per_meter.filter((_, i) => i !== index);
@@ -90,7 +94,7 @@ const LedgerEntryForm = ({ vendors, newEntry, setNewEntry, onSave }: LedgerEntry
     onSave();
   };
 
-  // Ensure units array exists
+  // Ensure units array exists and matches descriptions length
   if (!newEntry.units || newEntry.units.length !== newEntry.descriptions.length) {
     const updatedUnits = Array(newEntry.descriptions.length).fill('meter');
     setNewEntry({ ...newEntry, units: updatedUnits });
@@ -204,6 +208,7 @@ const LedgerEntryForm = ({ vendors, newEntry, setNewEntry, onSave }: LedgerEntry
                 type="button"
                 onClick={() => handleRemoveRow(idx)} 
                 variant="destructive"
+                disabled={newEntry.descriptions.length <= 1}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
