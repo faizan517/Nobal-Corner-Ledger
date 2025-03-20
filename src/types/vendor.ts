@@ -16,7 +16,7 @@ export interface VendorLedgerEntry {
   descriptions?: string[];
   quantities?: string[];
   prices?: string[];
-  units?: string[];
+  units?: string[] | string;
 }
 
 export interface NewLedgerEntry {
