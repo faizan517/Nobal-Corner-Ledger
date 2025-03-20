@@ -8,7 +8,7 @@ import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import VendorManagement from "./pages/VendorManagement";
-import LedgerManagement from "./pages/LedgerManagement";
+import LedgerManagement from "./pages/LedgerManagement.tsx";
 import VendorDetail from "./pages/VendorDetail";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
