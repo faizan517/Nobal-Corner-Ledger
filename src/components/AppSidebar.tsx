@@ -6,7 +6,6 @@ import {
   BookOpen,
   Settings,
   LogOut,
-  Menu,
 } from "lucide-react";
 import {
   Sidebar,
@@ -22,7 +21,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
-import logo from "@/assets/Logo.png";
 import { Fonts } from '@/utils/Font.jsx';
 import { RxHamburgerMenu } from "react-icons/rx";
 
@@ -74,7 +72,7 @@ const AppSidebar = () => {
       <Sidebar className={`${isMobile ? "fixed inset-y-0 left-0 z-40 bg-black text-white" : "bg-black text-white"}`}>
         <SidebarContent className="bg-black text-white" >
           <div>
-            <img src={logo} alt="VendorHub" className="w-60 ml-2 mt-20" />
+            <h1 className="text-xl font-bold text-white p-5 ml-2 mt-20">VendorHub</h1>
           </div>
           <SidebarGroup>
             <SidebarGroupLabel></SidebarGroupLabel>
