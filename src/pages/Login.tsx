@@ -1,18 +1,24 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { userApi } from "@/services/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const { login } = useAuth();
+
+  // Get the intended destination from location state, or default to dashboard
+  const from = (location.state as any)?.from?.pathname || "/dashboard";
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: { username: string; password: string }) => {
@@ -24,9 +30,12 @@ const Login = () => {
       }
     },
     onSuccess: (data) => {
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("token", data.token);
-      navigate("/dashboard");
+      // Use the login function from AuthContext
+      login(data.token, username, data.role || 'user');
+      
+      // Navigate to the intended destination
+      navigate(from);
+      
       toast({
         title: "Welcome back!",
         description: "You've successfully logged in.",

@@ -3,22 +3,24 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
 import AppSidebar from "./AppSidebar";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const isMobile = useIsMobile();
+  const { isAuthenticated, loading } = useAuth();
 
   useEffect(() => {
-    const auth = localStorage.getItem("isAuthenticated");
-    if (!auth && location.pathname !== "/") {
+    if (!isAuthenticated && !loading && location.pathname !== "/") {
       navigate("/");
-    } else {
-      setIsAuthenticated(true);
     }
-  }, [navigate, location]);
+  }, [isAuthenticated, loading, navigate, location]);
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
 
   if (!isAuthenticated) return null;
 
