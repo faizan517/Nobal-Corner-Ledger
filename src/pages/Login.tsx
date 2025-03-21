@@ -1,41 +1,26 @@
 
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { userApi } from "@/services/api";
-import { useAuth } from "@/contexts/AuthContext";
-
+import { Fonts } from "@/utils/Font.jsx";
 const Login = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");  // Change from username to email
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
-  const { login } = useAuth();
-
-  // Get the intended destination from location state, or default to dashboard
-  const from = (location.state as any)?.from?.pathname || "/dashboard";
 
   const loginMutation = useMutation({
-    mutationFn: async (credentials: { username: string; password: string }) => {
-      try {
-        // Map username to email as expected by the API
-        return await userApi.login({ email: credentials.username, password: credentials.password });
-      } catch (error: any) {
-        throw new Error(error.message || 'Login failed');
-      }
-    },
+    mutationFn: (credentials: { email: string; password: string }) =>
+      userApi.login(credentials),  // Pass email and password
     onSuccess: (data) => {
-      // Use the login function from AuthContext
-      login(data.token, username, data.role || 'user');
-      
-      // Navigate to the intended destination
-      navigate(from);
-      
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("token", data.token); // Store the JWT token
+      navigate("/dashboard");
       toast({
         title: "Welcome back!",
         description: "You've successfully logged in.",
@@ -43,7 +28,7 @@ const Login = () => {
     },
     onError: (error: Error) => {
       toast({
-        title: "Login Failed",
+        title: "Error",
         description: error.message,
         variant: "destructive",
       });
@@ -52,38 +37,29 @@ const Login = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username || !password) {
-      toast({
-        title: "Error",
-        description: "Please enter both username and password",
-        variant: "destructive",
-      });
-      return;
-    }
-    loginMutation.mutate({ username, password });
+    loginMutation.mutate({ email, password });  // Send email and password
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-50 to-gray-100 p-4">
       <Card className="w-full max-w-md glassmorphism">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            Vendor Dashboard
+          <CardTitle className="text-2xl font-bold tracking-tight" style={{...Fonts.Poppins}}>
+            Ledger Dashboard
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground" style={{...Fonts.Inter}}>
             Enter your credentials to continue
           </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4" style={{...Fonts.Poppins}}>
             <div className="space-y-2">
               <Input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                type="email"  // Change input type to email for better validation
+                placeholder="Email"  // Change placeholder to reflect email
+                value={email}  // Bind value to email state
+                onChange={(e) => setEmail(e.target.value)}  // Update state on change
                 className="w-full"
-                required
               />
             </div>
             <div className="space-y-2">
@@ -93,15 +69,10 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full"
-                required
               />
             </div>
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={loginMutation.isPending}
-            >
-              {loginMutation.isPending ? "Signing in..." : "Sign In"}
+            <Button type="submit" className="w-full bg-black text-white" style={{...Fonts.Poppins}} disabled={!email || !password}>
+              Sign In
             </Button>
           </form>
         </CardContent>
