@@ -22,6 +22,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
+import logo from "@/assets/Logo.png";
+import { Fonts } from '@/utils/Font.jsx';
+import { RxHamburgerMenu } from "react-icons/rx";
 
 const menuItems = [
   {
@@ -61,44 +64,46 @@ const AppSidebar = () => {
     <>
       {isMobile && (
         <div className="fixed top-4 left-4 z-50">
-          <SidebarTrigger>
+          <SidebarTrigger className="bg-white text-black">
             <Button variant="outline" size="icon">
-              <Menu className="h-4 w-4" />
+              <RxHamburgerMenu className="w-5 h-5" />
             </Button>
           </SidebarTrigger>
         </div>
       )}
-      <Sidebar className={isMobile ? "fixed inset-y-0 left-0 z-40" : ""}>
-        <SidebarContent>
-          <div className="p-6">
-            <h1 className="text-2xl font-bold text-primary">VendorHub</h1>
+      <Sidebar className={`${isMobile ? "fixed inset-y-0 left-0 z-40 bg-black text-white" : "bg-black text-white"}`}>
+        <SidebarContent className="bg-black text-white" >
+          <div>
+            <img src={logo} alt="VendorHub" className="w-60 ml-2 mt-20" />
           </div>
           <SidebarGroup>
-            <SidebarGroupLabel>Menu</SidebarGroupLabel>
+            <SidebarGroupLabel></SidebarGroupLabel>
+
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="mt-10">
                 {menuItems.map((item) => (
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
-                      className={location.pathname === item.path ? "bg-primary/10" : ""}
+                      size="lg"
+                      className={`${location.pathname === item.path ? "bg-white text-black hover:bg-white hover:text-black" : "hover:bg-gray-800"}`}
                       onClick={() => navigate(item.path)}
                     >
                       <item.icon className="w-5 h-5" />
-                      <span>{item.title}</span>
+                      <span style={{ ...Fonts.Poppins }}>{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
-          <div className="mt-auto p-4">
+          <div className="mt-auto p-16">
             <Button
               variant="ghost"
-              className="w-full justify-start"
+              className="w-full justify-start text-white hover:bg-gray-800 hover:text-white"
               onClick={handleLogout}
             >
-              <LogOut className="w-5 h-5 mr-2" />
-              Logout
+              <LogOut className="w-5 h-5 mr-1 hover:text-white" />
+              <span style={{ ...Fonts.Poppins }}>Logout</span>
             </Button>
           </div>
         </SidebarContent>
