@@ -8,18 +8,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { userApi } from "@/services/api";
 import { Fonts } from "@/utils/Font.jsx";
+import { useAuth } from "@/contexts/AuthContext";
+
 const Login = () => {
-  const [email, setEmail] = useState("");  // Change from username to email
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login } = useAuth();
 
   const loginMutation = useMutation({
     mutationFn: (credentials: { email: string; password: string }) =>
-      userApi.login(credentials),  // Pass email and password
+      userApi.login(credentials),
     onSuccess: (data) => {
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("token", data.token); // Store the JWT token
+      // Use the AuthContext login function instead of directly setting localStorage
+      login(data.token, email);
+      
       navigate("/dashboard");
       toast({
         title: "Welcome back!",
@@ -37,7 +41,7 @@ const Login = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    loginMutation.mutate({ email, password });  // Send email and password
+    loginMutation.mutate({ email, password });
   };
 
   return (
